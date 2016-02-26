@@ -1,0 +1,14 @@
+akka {
+
+  actor {
+    provider = "akka.remote.RemoteActorRefProvider"
+  }
+
+  remote {
+    netty.tcp {
+      hostname = "10.42.0.69"
+	  
+    }
+  }
+
+}

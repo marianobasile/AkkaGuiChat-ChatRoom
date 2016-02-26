@@ -1,0 +1,102 @@
+import akka.actor.ActorRef;
+import akka.actor.UntypedActor;
+import akka.actor.ActorSystem;
+import akka.actor.Props;
+import java.io.Serializable;
+import akka.actor.ActorIdentity;
+import akka.actor.Identify;
+import akka.actor.Terminated;
+import akka.actor.ReceiveTimeout;
+import akka.japi.Procedure;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import scala.concurrent.duration.Duration;
+import com.typesafe.config.ConfigFactory;
+
+
+    public class Communicator extends UntypedActor {
+
+        private GuiChat chat;
+        private final String path;
+        private ActorRef remoteActor = null;
+
+        public Communicator(String path, GuiChat chat) {
+            this.chat = chat;
+            this.path = path;
+            sendIdentifyRequest();
+
+            //chat.getTextAreaMessages().setText("ok\n");
+        }
+
+        private void sendIdentifyRequest() {
+
+            getContext().actorSelection(path).tell(new Identify(path), getSelf());
+
+            getContext().system().scheduler().scheduleOnce(Duration.create(3, SECONDS), getSelf(),ReceiveTimeout.getInstance(), getContext().dispatcher(), getSelf());
+        }
+        
+        @Override
+        public void onReceive(Object message) throws Exception {
+            if (message instanceof ActorIdentity) {
+                remoteActor = ((ActorIdentity) message).getRef();
+                if (remoteActor == null) {
+                    System.out.println("Remote actor not available: " + path);
+                } else {
+                     chat.getTextAreaMessages().setText("SUCCESSFULLY CONNECTED TO THE SERVER!!");
+                    getContext().watch(remoteActor);
+                    getContext().become(active, true);
+                 }
+            } else if (message instanceof ReceiveTimeout) {
+                sendIdentifyRequest();
+            } else {
+                chat.getTextAreaMessages().setText("Not ready yet");
+            }
+        }
+
+        Procedure<Object> active = new Procedure<Object>() {
+        @Override
+            public void apply(Object message) {
+                if (message instanceof Terminated) {
+                    chat.getTextAreaMessages().setText("Calculator terminated");
+                    sendIdentifyRequest();
+                    getContext().unbecome();
+                } else if (message instanceof ReceiveTimeout) {
+                    // ignore
+                } else if (message.getClass().getSimpleName().equals("Message")){
+                	   //String content = ((Messages.Message) message).getContent();
+                       //chat.getTextAreaMessages().setText(content);
+                        remoteActor.tell(new Messages().new Message("ok"),getSelf());
+                }else if (message.getClass().getSimpleName().equals("LoginMessage")){
+                	
+                }else if (message.getClass().getSimpleName().equals("DisconnectMessage")){
+                	
+                }
+                
+                else {
+                    unhandled(message);
+                }
+                /*
+                String content = this.chat.getTextAreaMessages().getText();
+				this.chat.getTextAreaMessages().setText(content+"ok\n");
+               // chat.getTextAreaMessages().setText("ok\n");*/
+            }
+        };
+
+    	public static void main(String[] args) {
+
+            GuiChat frame = new GuiChat();
+		    frame.setVisible(true);
+		    frame.setLocationRelativeTo(null);
+		    frame.setTitle("Remote Chat with Akka");
+		    
+
+            final ActorSystem system = ActorSystem.create("ClientChatSystem", ConfigFactory.load("remotelookup"));
+
+            final String path = "akka.tcp://ChatSystem@127.0.0.1:2552/user/chat";
+
+            final ActorRef communicator = system.actorOf(Props.create(Communicator.class, path, frame), "communicator");
+            
+            frame.setActorReference(communicator);
+    }
+}
+
+

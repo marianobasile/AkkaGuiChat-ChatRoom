@@ -1,0 +1,10 @@
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module 
+      fileurl="file://$PROJECT_DIR$/.idea_modules/akka-sample-remote-java-build.iml" filepath="$PROJECT_DIR$/.idea_modules/akka-sample-remote-java-build.iml">
+</module>
+      <module fileurl="file://$PROJECT_DIR$/.idea_modules/akka-sample-remote-java.iml" filepath="$PROJECT_DIR$/.idea_modules/akka-sample-remote-java.iml"/>
+    </modules>
+  </component>
+</project>

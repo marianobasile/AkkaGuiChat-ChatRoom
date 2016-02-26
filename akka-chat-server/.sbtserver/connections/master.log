@@ -1,0 +1,7 @@
+New log file opened at Sat Nov 21 13:29:10 CET 2015 by 4503@mariano-Aspire-5742G
+Taking next connection to: 50512
+New client attempting to connect on port: 51484-50512
+  Address = /127.0.1.1:50512
+This client on port 51484 has uuid 92374931-0b18-42ee-9094-bd956209b7b0 configName activator humanReadableName Activator protocolVersion 3 featureTags Vector()
+Connected Clients: activator-92374931-0b18-42ee-9094-bd956209b7b0
+Taking next connection to: 50512
